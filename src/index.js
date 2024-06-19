@@ -14,9 +14,7 @@ const popupTypeNewCard = document.querySelector(".popup_type_new-card");
 const editProfileForm = document.querySelector(".popup__form_type_edit");
 // Находим поля формы в DOM
 const nameInput = editProfileForm.querySelector(".popup__input_type_name");
-const jobInput = editProfileForm.querySelector(
-  ".popup__input_type_description"
-);
+const jobInput = editProfileForm.querySelector(".popup__input_type_description");
 // Находим форму для добавления карточки
 const addCardForm = popupTypeNewCard.querySelector(".popup__form");
 // Находим поля формы для добавления карточки
@@ -77,11 +75,8 @@ addCardForm.addEventListener("submit", handleAddCardSubmit);
 // Открытие модального окна
 profileEditButton.addEventListener("click", () => {
   // Заполняем инпуты данными из профиля
-  const newName = nameInput.value;
-  const newJob = jobInput.value;
-
-  nameElement.textContent = newName;
-  jobElement.textContent = newJob;
+  nameInput.value = nameElement.textContent;
+  jobInput.value = jobElement.textContent;
 
   // Открываем модальное окно с помощью функции openModal
   openModal(popupTypeEdit);
