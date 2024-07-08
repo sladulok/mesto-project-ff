@@ -1,4 +1,7 @@
-export function createCard(cardData, onDeleteCard, onImageClick, onLikeClick) {
+let userId; // Объявляем переменную userId
+
+// Функция создания карточки
+export function createCard(cardData, onDeleteCard, onImageClick, onLikeClick, userId) {
   const cardTemplate = document.querySelector("#card-template").content;
   const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
 
@@ -12,16 +15,17 @@ export function createCard(cardData, onDeleteCard, onImageClick, onLikeClick) {
   cardElement.querySelector(".card__title").textContent = cardData.name;
 
   // Проверяем, принадлежит ли карточка текущему пользователю
-  if (cardData.owner._id !== window.userId) {
+  if (cardData.owner._id !== userId) {
     deleteButton.style.display = 'none';
+  } else {
+    // Устанавливаем обработчик события удаления только если карточка принадлежит текущему пользователю
+    deleteButton.addEventListener("click", () => {
+      onDeleteCard(cardElement, cardData._id);
+    });
   }
 
   // Устанавливаем начальное состояние лайка и счетчик лайков
   updateLikeStatus(likeButton, likeCounter, cardData.likes);
-
-  deleteButton.addEventListener("click", () => {
-    onDeleteCard(cardElement, cardData._id);
-  });
 
   likeButton.addEventListener("click", () => {
     onLikeClick(cardElement, cardData._id);
@@ -34,6 +38,7 @@ export function createCard(cardData, onDeleteCard, onImageClick, onLikeClick) {
   return cardElement;
 }
 
+// Функция обновления состояния лайка
 export function updateLikeStatus(likeButton, likeCounter, likes) {
   likeCounter.textContent = likes.length;
   if (likes.some(like => like._id === window.userId)) {
@@ -43,12 +48,14 @@ export function updateLikeStatus(likeButton, likeCounter, likes) {
   }
 }
 
+// Функция переключения лайка
 export function toggleLike(cardElement, newLikes) {
   const likeButton = cardElement.querySelector(".card__like-button");
   const likeCounter = cardElement.querySelector(".card__like-counter");
   updateLikeStatus(likeButton, likeCounter, newLikes);
 }
 
+// Функция удаления карточки
 export function deleteCard(cardElement) {
   cardElement.remove();
 }

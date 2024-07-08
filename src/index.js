@@ -49,13 +49,23 @@ const validationSettings = {
   inactiveButtonClass: "popup__button_disabled",
   inputErrorClass: "popup__input_type_error",
   errorClass: "popup__error_visible",
-  errorMessages: {
-    pattern: 'Разрешены только латинские и кириллические буквы, знаки дефиса и пробелы'
-  }
 };
+
+function renderLoading(button, isLoading, loadingText = 'Сохранение...', originalText = 'Сохранить') {
+  if (isLoading) {
+    button.textContent = loadingText;
+    button.disabled = true;
+  } else {
+    button.textContent = originalText;
+    button.disabled = false;
+  }
+}
 
 function handleEditProfileFormSubmit(evt) {
   evt.preventDefault();
+  const submitButton = evt.submitter;
+  renderLoading(submitButton, true);
+
   const newName = nameInput.value;
   const newJob = jobInput.value;
 
@@ -64,11 +74,15 @@ function handleEditProfileFormSubmit(evt) {
       updateUserInfo(updatedUser);
       closeModal(popupTypeEdit);
     })
-    .catch((err) => console.error("Ошибка при обновлении профиля:", err));
+    .catch((err) => console.error("Ошибка при обновлении профиля:", err))
+    .finally(() => renderLoading(submitButton, false));
 }
 
 function handleAddCardSubmit(evt) {
   evt.preventDefault();
+  const submitButton = evt.submitter;
+  renderLoading(submitButton, true, 'Создание...', 'Создать');
+
   const cardName = cardNameInput.value;
   const cardLink = cardLinkInput.value;
 
@@ -78,12 +92,15 @@ function handleAddCardSubmit(evt) {
         newCardData,
         handleDeleteCard,
         onImageClick,
-        handleLikeClick
+        handleLikeClick,
+        window.userId
       );
       cardsContainer.prepend(newCard);
       closeModal(popupTypeNewCard);
+      evt.target.reset();
     })
-    .catch((err) => console.error("Ошибка при добавлении карточки:", err));
+    .catch((err) => console.error("Ошибка при добавлении карточки:", err))
+    .finally(() => renderLoading(submitButton, false, 'Создание...', 'Создать'));
 }
 
 function onImageClick(cardData) {
@@ -106,30 +123,22 @@ function renderCards(cards) {
       cardData,
       handleDeleteCard,
       onImageClick,
-      handleLikeClick
+      handleLikeClick,
+      window.userId
     );
     cardsContainer.append(card);
   });
 }
 
-function loadUserInfo() {
-  getUserInfo()
-    .then((userData) => {
+function initialDataLoad() {
+  Promise.all([getUserInfo(), getInitialCards()])
+    .then(([userData, cards]) => {
       window.userId = userData._id;
       updateUserInfo(userData);
-    })
-    .catch((err) => {
-      console.error("Ошибка при загрузке информации о пользователе:", err);
-    });
-}
-
-function loadInitialCards() {
-  getInitialCards()
-    .then((cards) => {
       renderCards(cards);
     })
     .catch((err) => {
-      console.error("Ошибка при загрузке карточек:", err);
+      console.error("Ошибка при загрузке начальных данных:", err);
     });
 }
 
@@ -156,18 +165,22 @@ function handleLikeClick(cardElement, cardId) {
 
 function handleAvatarUpdate(event) {
   event.preventDefault();
+  const submitButton = event.submitter;
+  renderLoading(submitButton, true);
+
   const avatarUrl = avatarUrlInput.value;
   updateUserAvatar(avatarUrl)
     .then((updatedUser) => {
       avatarElement.style.backgroundImage = `url(${updatedUser.avatar})`;
       closeModal(popupUpdateAvatar);
+      event.target.reset();
     })
-    .catch((error) => console.error("Ошибка при обновлении аватара:", error));
+    .catch((error) => console.error("Ошибка при обновлении аватара:", error))
+    .finally(() => renderLoading(submitButton, false));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadUserInfo();
-  loadInitialCards();
+  initialDataLoad();
 
   enableValidation(validationSettings);
 

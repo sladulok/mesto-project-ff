@@ -19,14 +19,7 @@ function checkResponse(res) {
 export const getInitialCards = () => {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers,
-  }).then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-
-    // если ошибка, отклоняем промис
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  }).then(checkResponse);
 };
 
 // Загрузка информации о пользователе
